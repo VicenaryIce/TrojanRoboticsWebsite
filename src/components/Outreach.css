@@ -102,30 +102,6 @@
   margin-bottom: clamp(48px, 7vw, 80px);
 }
 
-.outreach__course-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.outreach__course-card {
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.outreach__course-card ul {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--text-dim);
-  font-size: 0.88rem;
-  line-height: 1.7;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .outreach__event-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -149,20 +125,10 @@
   line-height: 1.7;
 }
 
-.outreach__photo-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.outreach__photo {
-  aspect-ratio: 4 / 3;
-  padding: 12px;
-}
-
-.outreach__photo-caption {
-  color: var(--accent-dim);
-  font-size: 0.72rem;
+.outreach__driftwall {
+  height: 420px;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
@@ -174,21 +140,13 @@
     grid-template-columns: 1fr;
   }
 
-  .outreach__course-grid {
-    grid-template-columns: 1fr;
-  }
-
   .outreach__event-grid {
     grid-template-columns: 1fr;
   }
-
-  .outreach__photo-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
-@media (max-width: 480px) {
-  .outreach__photo-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 560px) {
+  .outreach__driftwall {
+    height: 320px;
   }
 }

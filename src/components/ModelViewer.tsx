@@ -13,17 +13,26 @@ interface FrameInfo {
 
 interface ModelProps {
   url: string;
+  /** Corrective rotation in degrees, for GLBs whose source up-axis doesn't land Y-up in three.js. */
+  rotationCorrection: [number, number, number];
   controlsRef: React.RefObject<OrbitControlsImpl>;
   resetSignal: number;
   onFramed: (info: FrameInfo) => void;
 }
 
-function Model({ url, controlsRef, resetSignal, onFramed }: ModelProps) {
+// Keyed by url in <Scene>, so every instance of this component is a fresh
+// mount for its robot — no state or transforms can leak in from whatever
+// was previously loaded in the wrapper group.
+function Model({ url, rotationCorrection, controlsRef, resetSignal, onFramed }: ModelProps) {
   const { camera } = useThree();
   const gltf = useGLTF(url);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf]);
+  const wrapperRef = useRef<THREE.Group>(null);
 
   const frameCamera = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh) {
@@ -32,14 +41,21 @@ function Model({ url, controlsRef, resetSignal, onFramed }: ModelProps) {
       }
     });
 
-    // Freshly attached scene graphs have stale/identity matrixWorld until
-    // this runs, which throws off Box3.setFromObject below.
-    scene.updateMatrixWorld(true);
+    // Reset any prior offset before measuring, then force a fresh
+    // matrixWorld — freshly attached scene graphs have stale/identity
+    // matrices until this runs, which throws off Box3.setFromObject below.
+    wrapper.position.set(0, 0, 0);
+    wrapper.updateMatrixWorld(true);
 
     const box = new THREE.Box3().setFromObject(scene);
     const sphere = box.getBoundingSphere(new THREE.Sphere());
-    scene.position.set(-sphere.center.x, -sphere.center.y, -sphere.center.z);
-    scene.updateMatrixWorld(true);
+
+    // Recenter by offsetting the WRAPPER, not the loaded scene itself —
+    // keeps the source geometry untouched and this fully idempotent no
+    // matter how many times frameCamera reruns (StrictMode double-invoke,
+    // Reset View, etc.) since we always measure from a zeroed wrapper.
+    wrapper.position.set(-sphere.center.x, -sphere.center.y, -sphere.center.z);
+    wrapper.updateMatrixWorld(true);
 
     if (camera instanceof THREE.PerspectiveCamera) {
       const radius = Math.max(sphere.radius, 0.001);
@@ -75,7 +91,15 @@ function Model({ url, controlsRef, resetSignal, onFramed }: ModelProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetSignal]);
 
-  return <primitive object={scene} />;
+  const [rx, ry, rz] = rotationCorrection;
+  return (
+    <group
+      ref={wrapperRef}
+      rotation={[THREE.MathUtils.degToRad(rx), THREE.MathUtils.degToRad(ry), THREE.MathUtils.degToRad(rz)]}
+    >
+      <primitive object={scene} />
+    </group>
+  );
 }
 
 function Loader() {
@@ -92,15 +116,23 @@ function Loader() {
 
 interface SceneProps {
   url: string;
+  rotationCorrection: [number, number, number];
   resetSignal: number;
   autoRotateSpeed: number;
 }
 
-function Scene({ url, resetSignal, autoRotateSpeed }: SceneProps) {
+function Scene({ url, rotationCorrection, resetSignal, autoRotateSpeed }: SceneProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const [frame, setFrame] = useState<FrameInfo | null>(null);
   const [idle, setIdle] = useState(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset the framing state immediately when the robot changes so the old
+  // model's zoom clamps/contact-shadow scale don't flash before the new
+  // one finishes loading.
+  useEffect(() => {
+    setFrame(null);
+  }, [url]);
 
   useEffect(() => {
     const t = setTimeout(() => setIdle(true), 1800);
@@ -131,7 +163,14 @@ function Scene({ url, resetSignal, autoRotateSpeed }: SceneProps) {
       <Environment preset="night" background={false} />
 
       <Suspense fallback={<Loader />}>
-        <Model url={url} controlsRef={controlsRef} resetSignal={resetSignal} onFramed={setFrame} />
+        <Model
+          key={url}
+          url={url}
+          rotationCorrection={rotationCorrection}
+          controlsRef={controlsRef}
+          resetSignal={resetSignal}
+          onFramed={setFrame}
+        />
         {frame && (
           <ContactShadows
             position={[0, -frame.radius * 0.98, 0]}
@@ -162,11 +201,18 @@ function Scene({ url, resetSignal, autoRotateSpeed }: SceneProps) {
 
 interface ModelViewerProps {
   url: string;
+  /** Corrective rotation in degrees for this specific GLB's source orientation. */
+  rotationCorrection?: [number, number, number];
   autoRotateSpeed?: number;
   className?: string;
 }
 
-export default function ModelViewer({ url, autoRotateSpeed = 0.6, className = '' }: ModelViewerProps) {
+export default function ModelViewer({
+  url,
+  rotationCorrection = [0, 0, 0],
+  autoRotateSpeed = 0.6,
+  className = '',
+}: ModelViewerProps) {
   const [resetSignal, setResetSignal] = useState(0);
 
   return (
@@ -178,7 +224,12 @@ export default function ModelViewer({ url, autoRotateSpeed = 0.6, className = ''
         camera={{ fov: 45, near: 0.01, far: 100, position: [2, 1.5, 3] }}
         style={{ touchAction: 'none' }}
       >
-        <Scene url={url} resetSignal={resetSignal} autoRotateSpeed={autoRotateSpeed} />
+        <Scene
+          url={url}
+          rotationCorrection={rotationCorrection}
+          resetSignal={resetSignal}
+          autoRotateSpeed={autoRotateSpeed}
+        />
       </Canvas>
 
       <button

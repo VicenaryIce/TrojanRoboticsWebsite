@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import CursorGlow from './CursorGlow';
 import { robots } from '../config/robots';
 import { useInView } from '../hooks/useInView';
 import './Robots.css';
@@ -7,8 +8,10 @@ import './Robots.css';
 // the main bundle — it's only pulled in once this section is in view.
 const ModelViewer = lazy(() => import('./ModelViewer'));
 
+const defaultRobot = robots.find((r) => r.glbUrl) ?? robots[0];
+
 export default function Robots() {
-  const [selectedId, setSelectedId] = useState(robots[0]?.id ?? '');
+  const [selectedId, setSelectedId] = useState(defaultRobot?.id ?? '');
   const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '300px' });
 
   const selected = robots.find((r) => r.id === selectedId) ?? robots[0];
@@ -27,32 +30,51 @@ export default function Robots() {
         </p>
 
         <div className="robots__switcher" role="tablist" aria-label="Select robot">
-          {robots.map((r) => (
-            <button
-              key={r.id}
-              role="tab"
-              aria-selected={r.id === selectedId}
-              className={`robots__tab ${r.id === selectedId ? 'robots__tab--active' : ''}`}
-              onClick={() => setSelectedId(r.id)}
-            >
-              <span className="robots__tab-thumb">{r.thumbnailLabel}</span>
-              <span className="robots__tab-text">
-                <span className="robots__tab-name">{r.name}</span>
-                <span className="robots__tab-tagline">{r.tagline}</span>
-              </span>
-            </button>
-          ))}
+          {robots.map((r) => {
+            const pending = !r.glbUrl;
+            return (
+              <button
+                key={r.id}
+                role="tab"
+                aria-selected={r.id === selectedId}
+                className={`robots__tab ${r.id === selectedId ? 'robots__tab--active' : ''} ${
+                  pending ? 'robots__tab--pending' : ''
+                }`}
+                onClick={() => setSelectedId(r.id)}
+              >
+                <span className="robots__tab-thumb">{r.thumbnailLabel}</span>
+                <span className="robots__tab-text">
+                  <span className="robots__tab-name">
+                    {r.name}
+                    {pending && <span className="robots__tab-soon">Soon</span>}
+                  </span>
+                  <span className="robots__tab-tagline">{r.tagline}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="robots__layout">
-          <div className="robots__viewer">
-            {inView ? (
-              <Suspense fallback={<div className="robots__viewer-fallback">Loading viewer…</div>}>
-                <ModelViewer url={selected.glbUrl} className="robots__canvas" />
-              </Suspense>
-            ) : (
-              <div className="robots__viewer-fallback">Scroll to load 3D viewer</div>
-            )}
+          <div className="robots__viewer-glow-wrap">
+            <CursorGlow size={340} className="robots__cursor-glow" />
+            <div className="robots__viewer">
+              {!selected.glbUrl ? (
+                <div className="robots__viewer-fallback placeholder-box">
+                  <span>Model coming soon</span>
+                </div>
+              ) : inView ? (
+                <Suspense fallback={<div className="robots__viewer-fallback">Loading viewer…</div>}>
+                  <ModelViewer
+                    url={selected.glbUrl}
+                    rotationCorrection={selected.rotationCorrection}
+                    className="robots__canvas"
+                  />
+                </Suspense>
+              ) : (
+                <div className="robots__viewer-fallback">Scroll to load 3D viewer</div>
+              )}
+            </div>
           </div>
 
           <div className="robots__panel">

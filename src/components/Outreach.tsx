@@ -1,3 +1,5 @@
+import AccordionGallery from './AccordionGallery';
+import DriftWall from './DriftWall';
 import {
   courseTracks,
   highImpactEvents,
@@ -7,6 +9,16 @@ import {
   totalReach,
 } from '../config/outreach';
 import './Outreach.css';
+
+const courseGalleryItems = courseTracks.map((track) => ({
+  id: track.id,
+  label: track.name,
+  points: track.points,
+}));
+
+// TODO: swap in real event photos — outreachPhotos currently only carries
+// captions, no image URLs, so DriftWall falls back to styled placeholders.
+const driftWallItems = outreachPhotos.map((p) => ({ title: p.caption }));
 
 export default function Outreach() {
   return (
@@ -44,18 +56,7 @@ export default function Outreach() {
 
         <div className="outreach__courses">
           <h3 className="outreach__subtitle">Elementary School Robotics Courses</h3>
-          <div className="outreach__course-grid">
-            {courseTracks.map((track) => (
-              <div key={track.id} className="outreach__course-card card">
-                <span className="pill">{track.name}</span>
-                <ul>
-                  {track.points.map((p, i) => (
-                    <li key={i}>{p}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <AccordionGallery items={courseGalleryItems} defaultIndex={0} height={420} />
         </div>
 
         <div className="outreach__events">
@@ -72,27 +73,32 @@ export default function Outreach() {
 
         <div className="outreach__photos">
           <h3 className="outreach__subtitle">From the Field</h3>
-          <div className="outreach__photo-grid">
-            {outreachPhotos.map((p) => (
-              <div key={p.id} className="outreach__photo placeholder-box">
-                <PhotoIcon />
-                <span>Photo</span>
-                <span className="outreach__photo-caption">{p.caption}</span>
-              </div>
-            ))}
+          <div className="outreach__driftwall">
+            <DriftWall
+              items={driftWallItems}
+              columns={5}
+              tileWidth={180}
+              tileHeight={120}
+              gap={16}
+              tilt={14}
+              turn={-2}
+              perspective={2200}
+              depth={18}
+              speed={30}
+              direction="up"
+              variance={0.45}
+              parallax={0.5}
+              lift={50}
+              fade={1}
+              dim={0.55}
+              overlayColor="#0a0a0a"
+              radius={12}
+              pauseOnHover
+              grayscale
+            />
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function PhotoIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="8.5" cy="10.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M3 16l5-4 4 3 3-2 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
   );
 }

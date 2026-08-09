@@ -1,9 +1,12 @@
+import CursorGlow from './CursorGlow';
 import { sponsors } from '../config/team';
 import './Hero.css';
 
 export default function Hero() {
   return (
     <section id="hero" className="hero">
+      <CursorGlow size={480} className="hero__cursor-glow" />
+
       <div className="hero__bg" aria-hidden="true">
         <div className="hero__grid" />
         <div className="hero__glow" />
