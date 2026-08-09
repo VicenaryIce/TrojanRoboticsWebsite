@@ -1,0 +1,141 @@
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 76px;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(242, 194, 48, 0.12), transparent 60%), var(--bg);
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero__grid {
+  position: absolute;
+  inset: -1px;
+  background-image:
+    linear-gradient(rgba(242, 194, 48, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 194, 48, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 0%, transparent 75%);
+}
+
+.hero__glow {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  width: 900px;
+  height: 900px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(242, 194, 48, 0.18) 0%, transparent 65%);
+  filter: blur(10px);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(48px, 8vh, 96px);
+  padding-bottom: 48px;
+}
+
+.hero__kicker {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin: 0 0 20px;
+}
+
+.hero__title {
+  margin: 0 0 28px;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.98;
+}
+
+.hero__title-line {
+  display: block;
+}
+
+.hero__title-line--team {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.hero__title-line--name {
+  font-size: clamp(2.6rem, 10vw, 7.5rem);
+  letter-spacing: 0.01em;
+}
+
+.hero__tag {
+  margin-bottom: 24px;
+}
+
+.hero__subtext {
+  max-width: 560px;
+  color: var(--text-dim);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  margin: 0 0 36px;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero__sponsors {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border-soft);
+  padding: 28px 0 36px;
+}
+
+.hero__sponsors-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 18px;
+}
+
+.hero__sponsors-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.hero__sponsor-logo {
+  flex: 1 1 140px;
+  max-width: 180px;
+  height: 64px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  font-weight: 600;
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition: filter 0.25s ease, opacity 0.25s ease, border-color 0.25s ease;
+}
+
+.hero__sponsor-logo:hover {
+  filter: grayscale(0);
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
