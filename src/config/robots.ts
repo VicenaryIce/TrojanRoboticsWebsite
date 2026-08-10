@@ -58,6 +58,7 @@ export const robots: Robot[] = [
     tagline: 'European Championships Robot',
     glbUrl: '/models/sunspotv3.glb',
     thumbnailLabel: 'V3',
+    rotationCorrection: [-90, 0, 0],
     stats: [
       { label: 'Drivetrain', value: 'TODO' },
       { label: 'Intake', value: 'TODO' },

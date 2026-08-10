@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import './DriftWall.css';
 
 export interface DriftWallItem {
@@ -14,9 +14,9 @@ interface DriftWallProps {
   tileWidth?: number;
   tileHeight?: number;
   gap?: number;
-  /** Whole-wall rotateX, in degrees. */
+  /** Whole-wall base rotateX, in degrees. */
   tilt?: number;
-  /** Whole-wall rotateZ, in degrees. */
+  /** Whole-wall base rotateZ, in degrees. */
   turn?: number;
   perspective?: number;
   /** Per-column depth stagger (translateZ), in px. */
@@ -26,17 +26,17 @@ interface DriftWallProps {
   direction?: 'up' | 'down';
   /** Fractional per-column speed jitter (0-1). */
   variance?: number;
-  /** Extra speed differential between center and edge columns (0-1). */
+  /** Max additional pointer-tracked tilt, in degrees (0 disables the effect). */
   parallax?: number;
-  /** Alternating per-column vertical stagger, in px. */
+  /** Hover-lift distance for the active tile, in px (translateZ via --dw-lift). */
   lift?: number;
   /** Edge fade strength (0 = off). */
   fade?: number;
-  /** Dark tint overlay strength (0-1). */
+  /** Ambient tint overlay strength (0-1), blends the wall into the page background. */
   dim?: number;
   overlayColor?: string;
   radius?: number;
-  /** Continuous slow tile rotation in degrees/loop (0 = off). */
+  /** Continuous slow tile hue roll in degrees/loop (0 = off). */
   roll?: number;
   pauseOnHover?: boolean;
   grayscale?: boolean;
@@ -94,6 +94,13 @@ export default function DriftWall({
 }: DriftWallProps) {
   const columns = useResponsiveColumns(desiredColumns);
   const [paused, setPaused] = useState(false);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const planeRef = useRef<HTMLDivElement>(null);
+  const target = useRef({ rx: 0, ry: 0 });
+  const current = useRef({ rx: 0, ry: 0 });
+  const rafId = useRef<number | null>(null);
+
   const prefersReduced =
     typeof window !== 'undefined' && window.matchMedia
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -110,17 +117,62 @@ export default function DriftWall({
       ? `linear-gradient(to bottom, transparent 0%, black ${fade * 20}%, black ${100 - fade * 20}%, transparent 100%)`
       : undefined;
 
+  // Whole-plane pointer-parallax tilt: eased toward the pointer position every
+  // rAF tick and written straight to the DOM via ref, same no-per-event-state
+  // pattern as CursorGlow — a CSS transition here would fight the per-frame
+  // updates and read as laggy, so the plane is intentionally left untransitioned.
+  useEffect(() => {
+    const root = rootRef.current;
+    const plane = planeRef.current;
+    if (!root || !plane || parallax <= 0 || prefersReduced) return;
+
+    const handleMove = (e: PointerEvent) => {
+      const rect = root.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      target.current = { rx: -ny * parallax, ry: nx * parallax };
+    };
+    const handleLeave = () => {
+      target.current = { rx: 0, ry: 0 };
+    };
+
+    root.addEventListener('pointermove', handleMove);
+    root.addEventListener('pointerleave', handleLeave);
+
+    const tick = () => {
+      current.current.rx += (target.current.rx - current.current.rx) * 0.08;
+      current.current.ry += (target.current.ry - current.current.ry) * 0.08;
+      plane.style.transform = `rotateX(${tilt + current.current.rx}deg) rotateY(${current.current.ry}deg) rotateZ(${turn}deg)`;
+      rafId.current = requestAnimationFrame(tick);
+    };
+    rafId.current = requestAnimationFrame(tick);
+
+    return () => {
+      root.removeEventListener('pointermove', handleMove);
+      root.removeEventListener('pointerleave', handleLeave);
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    };
+  }, [tilt, turn, parallax, prefersReduced]);
+
   return (
     <div
+      ref={rootRef}
       className={`driftwall ${className}`}
-      style={{ '--dw-radius': `${radius}px`, perspective: `${perspective}px` } as CSSProperties}
+      style={
+        {
+          '--dw-radius': `${radius}px`,
+          '--dw-lift': `${lift}px`,
+          perspective: `${perspective}px`,
+        } as CSSProperties
+      }
       onMouseEnter={() => pauseOnHover && setPaused(true)}
       onMouseLeave={() => pauseOnHover && setPaused(false)}
     >
       <div
+        ref={planeRef}
         className="driftwall__grid"
         style={{
-          transform: `rotateX(${tilt}deg) rotateZ(${turn}deg)`,
+          transform: `rotateX(${tilt}deg) rotateY(0deg) rotateZ(${turn}deg)`,
           gap: `${gap}px`,
           maskImage,
           WebkitMaskImage: maskImage,
@@ -128,18 +180,15 @@ export default function DriftWall({
       >
         {columnData.map((colItems, i) => {
           const contentHeight = colItems.length * tileHeight + (colItems.length - 1) * gap;
-          const centerDist = columns > 1 ? Math.abs(i / (columns - 1) - 0.5) * 2 : 0;
-          const parallaxMultiplier = 1 + parallax * (0.5 - centerDist);
           const jitter = 1 + variance * (seeded(i) * 2 - 1);
-          const durationSeconds = Math.max(6, (contentHeight / Math.max(speed, 1)) * jitter / parallaxMultiplier);
-          const z = depth * (i - (columns - 1) / 2) / Math.max(columns, 1);
-          const yStagger = i % 2 === 1 ? lift : 0;
+          const durationSeconds = Math.max(6, (contentHeight / Math.max(speed, 1)) * jitter);
+          const z = (depth * (i - (columns - 1) / 2)) / Math.max(columns, 1);
 
           return (
             <div
               key={i}
               className="driftwall__column"
-              style={{ width: `${tileWidth}px`, transform: `translateZ(${z}px) translateY(${yStagger}px)` }}
+              style={{ width: `${tileWidth}px`, transform: `translateZ(${z}px)` }}
             >
               <div
                 className={`driftwall__track ${prefersReduced ? 'driftwall__track--static' : ''} ${
@@ -151,16 +200,22 @@ export default function DriftWall({
                   animationDirection: direction === 'down' ? 'reverse' : 'normal',
                 }}
               >
-                {(prefersReduced ? colItems : [...colItems, ...colItems]).map((item, ti) => (
-                  <Tile
-                    key={ti}
-                    item={item}
-                    width={tileWidth}
-                    height={tileHeight}
-                    grayscale={grayscale}
-                    roll={roll}
-                  />
-                ))}
+                {(prefersReduced ? colItems : [...colItems, ...colItems]).map((item, ti) => {
+                  const key = `${i}-${ti}`;
+                  return (
+                    <Tile
+                      key={ti}
+                      item={item}
+                      width={tileWidth}
+                      height={tileHeight}
+                      grayscale={grayscale}
+                      roll={roll}
+                      active={activeKey === key}
+                      onActivate={() => setActiveKey(key)}
+                      onDeactivate={() => setActiveKey((k) => (k === key ? null : k))}
+                    />
+                  );
+                })}
               </div>
             </div>
           );
@@ -187,12 +242,18 @@ function Tile({
   height,
   grayscale,
   roll,
+  active,
+  onActivate,
+  onDeactivate,
 }: {
   item: DriftWallItem;
   width: number;
   height: number;
   grayscale: boolean;
   roll: number;
+  active: boolean;
+  onActivate: () => void;
+  onDeactivate: () => void;
 }) {
   const content = (
     <>
@@ -214,18 +275,20 @@ function Tile({
     animationDuration: roll > 0 ? `${Math.max(20, 3600 / roll)}s` : undefined,
   };
 
+  const cls = `driftwall__tile ${roll > 0 ? 'driftwall__tile--roll' : ''} ${active ? 'is-active' : ''}`;
+  const handlers = {
+    onMouseEnter: onActivate,
+    onMouseLeave: onDeactivate,
+    onFocus: onActivate,
+    onBlur: onDeactivate,
+  };
+
   return item.href ? (
-    <a
-      href={item.href}
-      className={`driftwall__tile ${roll > 0 ? 'driftwall__tile--roll' : ''}`}
-      style={style}
-      target="_blank"
-      rel="noreferrer"
-    >
+    <a href={item.href} className={cls} style={style} target="_blank" rel="noreferrer" {...handlers}>
       {content}
     </a>
   ) : (
-    <div className={`driftwall__tile ${roll > 0 ? 'driftwall__tile--roll' : ''}`} style={style}>
+    <div className={cls} style={style} tabIndex={0} {...handlers}>
       {content}
     </div>
   );

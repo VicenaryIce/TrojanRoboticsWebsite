@@ -50,6 +50,14 @@ function Model({ url, rotationCorrection, controlsRef, resetSignal, onFramed }: 
     const box = new THREE.Box3().setFromObject(scene);
     const sphere = box.getBoundingSphere(new THREE.Sphere());
 
+    if (import.meta.env.DEV) {
+      const size = box.getSize(new THREE.Vector3());
+      // eslint-disable-next-line no-console
+      console.log(
+        `[ModelViewer] ${url} bbox size (post-correction) x=${size.x.toFixed(3)} y=${size.y.toFixed(3)} z=${size.z.toFixed(3)} — the "tall" axis should be y`
+      );
+    }
+
     // Recenter by offsetting the WRAPPER, not the loaded scene itself —
     // keeps the source geometry untouched and this fully idempotent no
     // matter how many times frameCamera reruns (StrictMode double-invoke,
