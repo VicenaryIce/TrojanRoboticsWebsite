@@ -229,6 +229,7 @@ export default function ModelViewer({
         shadows
         frameloop="demand"
         dpr={[1, 1.75]}
+        gl={{ preserveDrawingBuffer: true }}
         camera={{ fov: 45, near: 0.01, far: 100, position: [2, 1.5, 3] }}
         style={{ touchAction: 'none' }}
       >

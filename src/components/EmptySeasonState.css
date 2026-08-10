@@ -1,0 +1,23 @@
+.empty-season-state {
+  width: 100%;
+  min-height: 260px;
+  padding: 48px 24px;
+  gap: 12px;
+}
+
+.empty-season-state__title {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 1.3rem;
+  color: var(--text-dim);
+}
+
+.empty-season-state__message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-faint);
+  max-width: 420px;
+}

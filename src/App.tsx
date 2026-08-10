@@ -5,10 +5,11 @@ import Robots from './components/Robots';
 import Outreach from './components/Outreach';
 import Mentors from './components/Mentors';
 import Footer from './components/Footer';
+import { SeasonProvider } from './context/SeasonContext';
 
 export default function App() {
   return (
-    <>
+    <SeasonProvider>
       <Nav />
       <main>
         <Hero />
@@ -18,6 +19,6 @@ export default function App() {
         <Mentors />
       </main>
       <Footer />
-    </>
+    </SeasonProvider>
   );
 }

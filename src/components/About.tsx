@@ -1,7 +1,14 @@
-import { awards, demographics, mission } from '../config/team';
+import { awardsBySeason, demographics, mission } from '../config/team';
+import { seasonList } from '../config/seasons';
+import { useSeason } from '../context/SeasonContext';
+import EmptySeasonState from './EmptySeasonState';
 import './About.css';
 
 export default function About() {
+  const { season } = useSeason();
+  const awards = awardsBySeason[season];
+  const seasonLabel = seasonList.find((s) => s.id === season)?.label ?? season;
+
   return (
     <section id="about" className="section about">
       <div className="container">
@@ -32,18 +39,22 @@ export default function About() {
 
         <div className="about__history">
           <p className="eyebrow">Performance History</p>
-          <ol className="timeline">
-            {awards.map((a, i) => (
-              <li key={i} className="timeline__item">
-                <div className="timeline__dot" />
-                <div className="timeline__content">
-                  <span className="timeline__year">{a.year}</span>
-                  <span className="timeline__title">{a.title}</span>
-                  <span className="timeline__event">{a.event}</span>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {awards.length > 0 ? (
+            <ol className="timeline">
+              {awards.map((a, i) => (
+                <li key={i} className="timeline__item">
+                  <div className="timeline__dot" />
+                  <div className="timeline__content">
+                    <span className="timeline__year">{a.year}</span>
+                    <span className="timeline__title">{a.title}</span>
+                    <span className="timeline__event">{a.event}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptySeasonState seasonLabel={seasonLabel} />
+          )}
         </div>
       </div>
     </section>

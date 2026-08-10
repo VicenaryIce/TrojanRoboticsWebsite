@@ -1,20 +1,25 @@
+import type { SeasonId } from './seasons';
+
 export interface Award {
   year: string;
   title: string;
   event: string;
 }
 
-// Most recent first.
-export const awards: Award[] = [
-  { year: '2026', title: '14th Division Placement', event: 'FIRST World Championship' },
-  { year: '2026', title: 'Winner', event: 'Benelux Championship' },
-  { year: '2026', title: '3rd Inspire Award', event: 'Benelux Championship' },
-  { year: '2025', title: 'Finalist Alliance Captain', event: 'Benelux Qualifier' },
-  { year: '2025', title: '2nd Inspire Award', event: 'Benelux Qualifier' },
-  { year: '2025', title: '3rd Think Award', event: 'European Premier Event' },
-  { year: '2025', title: '1st Think Award', event: 'Benelux Championships' },
-  { year: '2024', title: '1st Inspire Award', event: 'Benelux Qualifier' },
-];
+// Most recent first, keyed by season.
+export const awardsBySeason: Record<SeasonId, Award[]> = {
+  decode: [
+    { year: '2026', title: '14th Division Placement', event: 'FIRST World Championship' },
+    { year: '2026', title: 'Winner', event: 'Benelux Championship' },
+    { year: '2026', title: '3rd Inspire Award', event: 'Benelux Championship' },
+    { year: '2025', title: 'Finalist Alliance Captain', event: 'Benelux Qualifier' },
+    { year: '2025', title: '2nd Inspire Award', event: 'Benelux Qualifier' },
+    { year: '2025', title: '3rd Think Award', event: 'European Premier Event' },
+    { year: '2025', title: '1st Think Award', event: 'Benelux Championships' },
+    { year: '2024', title: '1st Inspire Award', event: 'Benelux Qualifier' },
+  ],
+  biobuzz: [],
+};
 
 export interface DemographicStat {
   value: string;
