@@ -10,8 +10,10 @@ export interface CircularGalleryProps {
   bend?: number;
   textColor?: string;
   borderRadius?: number;
-  scrollEase?: number;
   font?: string;
+  fontUrl?: string;
+  scrollSpeed?: number;
+  scrollEase?: number;
 }
 
 declare const CircularGallery: ComponentType<CircularGalleryProps>;
