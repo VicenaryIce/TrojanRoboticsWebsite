@@ -2,6 +2,7 @@ import { awardsBySeason, demographics, mission } from '../config/team';
 import { seasonList } from '../config/seasons';
 import { useSeason } from '../context/SeasonContext';
 import EmptySeasonState from './EmptySeasonState';
+import PerformanceTimeline from './PerformanceTimeline';
 import './About.css';
 
 export default function About() {
@@ -40,18 +41,7 @@ export default function About() {
         <div className="about__history">
           <p className="eyebrow">Performance History</p>
           {awards.length > 0 ? (
-            <ol className="timeline">
-              {awards.map((a, i) => (
-                <li key={i} className="timeline__item">
-                  <div className="timeline__dot" />
-                  <div className="timeline__content">
-                    <span className="timeline__year">{a.year}</span>
-                    <span className="timeline__title">{a.title}</span>
-                    <span className="timeline__event">{a.event}</span>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <PerformanceTimeline awards={awards} />
           ) : (
             <EmptySeasonState seasonLabel={seasonLabel} />
           )}
