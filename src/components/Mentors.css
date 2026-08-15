@@ -15,12 +15,12 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .mentors__card:hover {
   border-color: var(--border);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .mentors__photo {

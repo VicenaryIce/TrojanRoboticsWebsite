@@ -103,7 +103,7 @@ export default function PerformanceTimeline({ awards }: PerformanceTimelineProps
             </div>
             <div className="perf-timeline__card card">
               <div className="perf-timeline__card-head">
-                <span className="perf-timeline__card-year glow-text">{award.year}</span>
+                <span className="perf-timeline__card-year">{award.year}</span>
                 <span
                   className={`perf-timeline__badge ${
                     judged ? 'perf-timeline__badge--award' : 'perf-timeline__badge--placement'

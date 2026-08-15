@@ -19,9 +19,10 @@
 }
 
 .outreach__goal-index {
-  font-family: var(--font-headline);
+  font-family: var(--font-body);
+  font-weight: 700;
   color: var(--accent);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
@@ -115,7 +116,7 @@
 .outreach__event-card h4 {
   margin: 0 0 10px;
   font-size: 1.05rem;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .outreach__event-card p {

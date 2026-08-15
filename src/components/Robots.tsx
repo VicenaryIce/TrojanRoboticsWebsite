@@ -79,7 +79,7 @@ export default function Robots() {
 
             <div className="robots__layout">
               <div className="robots__viewer-glow-wrap">
-                <CursorGlow size={340} className="robots__cursor-glow" />
+                <CursorGlow size={220} className="robots__cursor-glow" />
                 <div className="robots__viewer">
                   {!selected.glbUrl ? (
                     <div className="robots__viewer-fallback placeholder-box">

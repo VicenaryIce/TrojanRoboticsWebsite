@@ -5,7 +5,7 @@ import './Hero.css';
 export default function Hero() {
   return (
     <section id="hero" className="hero">
-      <CursorGlow size={480} className="hero__cursor-glow" />
+      <CursorGlow size={320} className="hero__cursor-glow" />
 
       <div className="hero__bg" aria-hidden="true">
         <div className="hero__grid" />

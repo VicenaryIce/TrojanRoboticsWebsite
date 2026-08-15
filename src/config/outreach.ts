@@ -1,4 +1,5 @@
 import type { SeasonId } from './seasons';
+import { formatImageLabel } from '../utils/formatImageLabel';
 
 export interface CourseTrack {
   id: string;
@@ -18,7 +19,6 @@ export interface HighImpactEvent {
 }
 
 export interface GalleryItem {
-  /** Placeholder photo URL — swap in a real event photo later. */
   image: string;
   text: string;
 }
@@ -33,9 +33,20 @@ export interface OutreachSeasonContent {
   galleryItems: GalleryItem[];
 }
 
-// TODO: swap for real event photos — every item currently points at the
-// same on-brand placeholder graphic (public/placeholder-photo.svg).
-const PLACEHOLDER_PHOTO = '/placeholder-photo.svg';
+// Real outreach event photos live in src/assets/images (see scripts/convert-heic.js
+// for the HEIC → JPG conversion step). _originals/ holds the pre-conversion HEIC
+// files and is excluded by this single-level glob.
+const outreachImageModules = import.meta.glob<{ default: string }>(
+  '/src/assets/images/*.{jpg,jpeg,png}',
+  { eager: true }
+);
+
+const outreachGalleryItems: GalleryItem[] = Object.entries(outreachImageModules).map(
+  ([filePath, mod]) => {
+    const filename = filePath.split('/').pop() ?? filePath;
+    return { image: mod.default, text: formatImageLabel(filename) };
+  }
+);
 
 export const outreachBySeason: Record<SeasonId, OutreachSeasonContent | null> = {
   decode: {
@@ -113,20 +124,7 @@ export const outreachBySeason: Record<SeasonId, OutreachSeasonContent | null> = 
           'Inspired the International School of The Hague to launch an FTC team by showcasing our robot and hands-on driving, and worked with the European School of The Hague to explore starting theirs.',
       },
     ],
-    galleryItems: [
-      { image: PLACEHOLDER_PHOTO, text: 'The Hague TechFest' },
-      { image: PLACEHOLDER_PHOTO, text: 'Dutch Student Workshop' },
-      { image: PLACEHOLDER_PHOTO, text: 'Green Impact Initiative' },
-      { image: PLACEHOLDER_PHOTO, text: 'ASH Activities Fair' },
-      { image: PLACEHOLDER_PHOTO, text: 'ES Robotics Program' },
-      { image: PLACEHOLDER_PHOTO, text: 'Makerdays Eindhoven' },
-      { image: PLACEHOLDER_PHOTO, text: 'Hosted Scrimmage' },
-      { image: PLACEHOLDER_PHOTO, text: 'STEM Expo' },
-      { image: PLACEHOLDER_PHOTO, text: 'Robotics Showcase' },
-      { image: PLACEHOLDER_PHOTO, text: 'Back to ASH' },
-      { image: PLACEHOLDER_PHOTO, text: 'ISH Visit' },
-      { image: PLACEHOLDER_PHOTO, text: 'Trick or Trunk' },
-    ],
+    galleryItems: outreachGalleryItems,
   },
   biobuzz: null,
 };

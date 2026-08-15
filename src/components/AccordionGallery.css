@@ -39,7 +39,8 @@
   top: 14px;
   left: 14px;
   z-index: 3;
-  font-family: var(--font-headline);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;

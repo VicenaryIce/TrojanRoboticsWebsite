@@ -10,8 +10,8 @@
   column-gap: 18px;
   padding-bottom: 26px;
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .perf-timeline__row.is-visible {
@@ -48,7 +48,6 @@
   width: 2px;
   transform: translateX(-50%);
   background: linear-gradient(to bottom, var(--accent), rgba(242, 194, 48, 0.2));
-  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .perf-timeline__row:last-child .perf-timeline__spine-col::before {
@@ -68,7 +67,6 @@
 
 .perf-timeline__node--placement {
   background: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .perf-timeline__node--award {
@@ -122,8 +120,9 @@
 }
 
 .perf-timeline__card-year {
-  font-family: var(--font-headline);
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
   letter-spacing: 0.02em;
 }
 
